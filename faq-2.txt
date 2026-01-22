@@ -1,4 +1,4 @@
-poster:"https://faq.ukrtelecom.pp.ua/images/faq-2.png"
+poster:"https://faq.укртелеком.pp.ua/images/faq-2.png"
 • Швидкість інтернету 1 Гігабіт/с — як стандарт, без жодних доплат.
 
 • Інтернет працює навіть при відключенні світла.
