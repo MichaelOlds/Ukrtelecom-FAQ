@@ -1,1 +1,2 @@
-
+poster:"https://faq.укртелеком.pp.ua/images/faq-1.png"
+Все дуже просто: напишіть нам у url:"viber://chat?number=380969803151"=Viber, url:"https://t.me/+380969803151"=Telegram або tel:"+380969803151"=зателефонуйте.
