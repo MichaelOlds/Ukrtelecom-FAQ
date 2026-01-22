@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <title>FAQ – Укртелеком</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background:#f9f9f9;
+      margin:0;
+      padding:0;
+      line-height:1.6;
+    }
+    header {
+      text-align:center;
+      margin-top:40px;
+    }
+    header img {
+      width:300px;
+      height:80px;
+      max-width:90%;
+      transition: all 0.3s ease;
+    }
+    header img.small {
+      width:200px;
+      height:55px;
+    }
+    h1 {
+      text-align:center;
+      margin:10px 10px;
+      margin-top:30px;
+      font-size:1.4em;
+    }
+    h1.hidden {
+      display:none;
+    }
+    ul {
+      list-style:none;
+      padding:0;
+      margin:0 auto;
+      max-width:95%;
+    }
+    li {
+      margin:12px 0;
+      padding:12px;
+      border:2px solid #000;
+      border-radius:8px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background:#fff;
+    }
+    a {
+      text-decoration:none;
+      color:#000;
+      font-weight:bold;
+      flex-grow:1;
+      outline:none;
+      -webkit-tap-highlight-color: transparent;
+      user-select:none;
+    }
+    a:focus, a:active {
+      outline:none;
+      background:none;
+      color:#000;
+    }
+    .arrow {
+      color:#000;
+      font-weight:bold;
+      font-size:1.1em;
+      line-height:1;
+      display:flex;
+      align-items:center;
+    }
+    .content {
+      max-width:95%;
+      margin:20px auto;
+      background:#f9f9f9;
+      padding:20px;
+      border-radius:8px;
+      display:none;
+      font-size:1.1em;
+      white-space:pre-wrap;
+    }
+    .content img {
+      max-width:100%;
+      border-radius:8px;
+      margin:10px 0;
+    }
+    .content img.poster {
+      margin-bottom:-10px;
+    }
+    .back {
+      display:none;
+      margin:20px auto;
+      text-align:center;
+      background:#000;
+      color:#fff;
+      padding:10px 20px;
+      border-radius:8px;
+      cursor:pointer;
+      font-size:1.1em;
+      border:none;
+      width:max-content;
+    }
+    .back:hover {
+      background:#333;
+    }
+    @media (min-width:768px) {
+      header { margin-top:80px; }
+      header img { width:500px; height:130px; }
+      header img.small { width:300px; height:80px; }
+      h1 { font-size:1.8em; }
+      ul, .content { max-width:600px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img id="logo" src="https://ukrtelecom.ua/storage/storage/15/logo.svg"
+         alt="Укртелеком Логотип"
+         width="300" height="80">
+  </header>
+
+  <h1 id="main-title">FAQ</h1>
+  <ul id="faq-list"></ul>
+  <div class="content" id="faq-content"></div>
+  <button class="back" id="back-btn">На головну ⌲</button>
+
+  <script>
+    async function loadFaqList() {
+      const response = await fetch('faq-list.json');
+      const data = await response.json();
+      const list = document.getElementById('faq-list');
+      const content = document.getElementById('faq-content');
+      const backBtn = document.getElementById('back-btn');
+      const title = document.getElementById('main-title');
+      const logo = document.getElementById('logo');
+
+      function showList() {
+        list.style.display = 'block';
+        content.style.display = 'none';
+        backBtn.style.display = 'none';
+        title.classList.remove('hidden');
+        logo.classList.remove('small');
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+
+      async function showFaq(item) {
+        list.style.display = 'none';
+        content.style.display = 'block';
+        backBtn.style.display = 'block';
+        title.classList.add('hidden');
+        logo.classList.add('small');
+
+        const res = await fetch(item['Файл']);
+        let faqText = await res.text();
+
+        // Замінюємо спеціальні конструкції на HTML
+        faqText = faqText
+          .replace(/url:"(.*?)"=(.*?)(\s|$)/g,
+            (match, url, text, space) => `<a href="${url}" target="_blank">${text}</a>${space}`)
+          .replace(/tel:"(.*?)"=(.*?)(\s|$)/g,
+            (match, tel, text, space) => `<a href="tel:${tel}">${text}</a>${space}`)
+          .replace(/mail:"(.*?)"=(.*?)(\s|$)/g,
+            (match, mail, text, space) => `<a href="mailto:${mail}">${text}</a>${space}`)
+          .replace(/img:"(.*?)"/g,
+            (match, imgUrl) => `<img src="${imgUrl}" alt="Image">`);
+
+        const lines = faqText.split('\n');
+        let html = '';
+
+        if (lines[0].startsWith('poster:"')) {
+          const posterUrl = lines[0].match(/poster:"(.*)"/)[1];
+          html += `<img src="${posterUrl}" alt="Poster" class="poster">`;
+          html += `<h2>${item['Назва']}</h2>`;
+          html += parseParagraphs(lines.slice(1).join('\n'));
+        } else {
+          html = `<h2>${item['Назва']}</h2>` + parseParagraphs(faqText);
+        }
+
+        content.innerHTML = html;
+
+        window.history.pushState({}, '', `?faq=${item['Шлях']}`);
+      }
+
+      // Функція для обробки абзаців з position:"..."
+      function parseParagraphs(text) {
+        return text.split('\n').map(line => {
+          const posMatch = line.match(/position:"(.*?)"/);
+          if (posMatch) {
+            const pos = posMatch[1];
+            const cleanLine = line.replace(/position:"(.*?)"/, '').trim();
+            return `<p style="text-align:${pos};">${cleanLine}</p>`;
+          } else {
+            return line.trim() ? `<p>${line}</p>` : '';
+          }
+        }).join('');
+      }
+
+      data.forEach(item => {
+        const li = document.createElement('li');
+        const link = document.createElement('a');
+        link.textContent = item['Назва'];
+        link.addEventListener('click', () => showFaq(item));
+
+        const arrow = document.createElement('span');
+        arrow.className = 'arrow';
+        arrow.textContent = '＞';
+
+        li.appendChild(link);
+        li.appendChild(arrow);
+        list.appendChild(li);
+      });
+
+      backBtn.addEventListener('click', showList);
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const faqParam = urlParams.get('faq');
+      if (faqParam) {
+        const item = data.find(el => el['Шлях'] === faqParam);
+        if (item) showFaq(item);
+        else showList();
+      } else {
+        showList();
+      }
+
+      window.addEventListener('popstate', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const faqParam = urlParams.get('faq');
+        if (faqParam) {
+          const item = data.find(el => el['Шлях'] === faqParam);
+          if (item) showFaq(item);
+        } else {
+          showList();
+        }
+      });
+    }
+
+    loadFaqList();
+  </script>
+</body>
+</html>
