@@ -1,8 +1,3 @@
 poster:"https://faq.укртелеком.pp.ua/images/faq-3.png"
 position:"center" Телефонуйте за номером:
-position:"center" tel:"0 800 506 800"=0‎‎‎ 800 506 800 або tel:"+38 044 440 00 00"=+38 044 440 00 00
-
-position:"center" Під час дзвінка діє голосове меню.
-
-position:"center" Щоб з'єднання з живим оператором, обов'язково скажіть:
-position:"center" "Відключити інтернет"
+position:"center" tel:"+380969803151"=+380969803151
